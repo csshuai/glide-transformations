@@ -16,12 +16,17 @@ package jp.wasabeef.glide.transformations.gpu;
  * limitations under the License.
  */
 
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImageBrightnessFilter;
 
 /**
  * brightness value ranges from -1.0 to 1.0, with 0.0 as the normal level
  */
 public class BrightnessFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.BrightnessFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private float brightness;
 
@@ -36,7 +41,23 @@ public class BrightnessFilterTransformation extends GPUFilterTransformation {
     filter.setBrightness(this.brightness);
   }
 
-  @Override public String key() {
-    return "BrightnessFilterTransformation(brightness=" + brightness + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    BrightnessFilterTransformation that = (BrightnessFilterTransformation) o;
+
+    return Float.compare(that.brightness, brightness) == 0;
+  }
+
+  @Override public int hashCode() {
+    return Util.hashCode(ID.hashCode(), Util.hashCode(brightness));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putFloat(brightness).array();
+    messageDigest.update(data);
   }
 }

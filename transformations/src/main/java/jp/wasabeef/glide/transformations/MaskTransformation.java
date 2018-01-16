@@ -25,9 +25,14 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.wasabeef.glide.transformations.internal.Utils;
 
 public class MaskTransformation extends BitmapTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.MaskTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private static Paint paint = new Paint();
   private int maskId;
@@ -63,7 +68,23 @@ public class MaskTransformation extends BitmapTransformation {
     return bitmap;
   }
 
-  @Override public String key() {
-    return "MaskTransformation(maskId=" + maskId + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    MaskTransformation that = (MaskTransformation) o;
+
+    return maskId == that.maskId;
+  }
+
+  @Override public int hashCode() {
+    return Util.hashCode(ID.hashCode(), Util.hashCode(maskId));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putInt(maskId).array();
+    messageDigest.update(data);
   }
 }

@@ -16,6 +16,9 @@ package jp.wasabeef.glide.transformations.gpu;
  * limitations under the License.
  */
 
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImageKuwaharaFilter;
 
 /**
@@ -25,6 +28,8 @@ import jp.co.cyberagent.android.gpuimage.GPUImageKuwaharaFilter;
  * The larger the radius, the slower the filter.
  */
 public class KuwaharaFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.KuwaharaFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private int radius;
 
@@ -39,7 +44,23 @@ public class KuwaharaFilterTransformation extends GPUFilterTransformation {
     filter.setRadius(this.radius);
   }
 
-  @Override public String key() {
-    return "KuwaharaFilterTransformation(radius=" + radius + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    KuwaharaFilterTransformation that = (KuwaharaFilterTransformation) o;
+
+    return radius == that.radius;
+  }
+
+  @Override public int hashCode() {
+    return Util.hashCode(ID.hashCode(), Util.hashCode(radius));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putInt(radius).array();
+    messageDigest.update(data);
   }
 }

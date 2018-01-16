@@ -22,18 +22,15 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 
 public class CropTransformation extends BitmapTransformation {
-
-  public enum CropType {
-    TOP,
-    CENTER,
-    BOTTOM
-  }
-
+  private static final String ID = "jp.wasabeef.glide.transformations.CropTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
   private int width;
   private int height;
-
   private CropType cropType = CropType.CENTER;
 
   public CropTransformation(int width, int height) {
@@ -74,11 +71,6 @@ public class CropTransformation extends BitmapTransformation {
     return bitmap;
   }
 
-  @Override public String key() {
-    return "CropTransformation(width=" + width + ", height=" + height + ", cropType=" + cropType
-        + ")";
-  }
-
   private float getTop(float scaledHeight) {
     switch (cropType) {
       case TOP:
@@ -90,5 +82,38 @@ public class CropTransformation extends BitmapTransformation {
       default:
         return 0;
     }
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    CropTransformation that = (CropTransformation) o;
+
+    if (width != that.width) return false;
+    if (height != that.height) return false;
+    return cropType == that.cropType;
+  }
+
+  @Override public int hashCode() {
+    int result = width;
+    result = 31 * result + height;
+    result = 31 * result + cropType.hashCode();
+    return Util.hashCode(ID.hashCode(), Util.hashCode(result));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putInt(width).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putInt(height).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putInt(cropType.ordinal()).array();
+    messageDigest.update(data);
+  }
+
+  public enum CropType {
+    TOP, CENTER, BOTTOM
   }
 }

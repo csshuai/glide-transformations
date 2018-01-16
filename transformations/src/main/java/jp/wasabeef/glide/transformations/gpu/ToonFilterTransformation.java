@@ -16,6 +16,9 @@ package jp.wasabeef.glide.transformations.gpu;
  * limitations under the License.
  */
 
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImageToonFilter;
 
 /**
@@ -24,6 +27,8 @@ import jp.co.cyberagent.android.gpuimage.GPUImageToonFilter;
  * with a default of 10.0.
  */
 public class ToonFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.ToonFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private float threshold;
   private float quantizationLevels;
@@ -41,8 +46,29 @@ public class ToonFilterTransformation extends GPUFilterTransformation {
     filter.setQuantizationLevels(this.quantizationLevels);
   }
 
-  @Override public String key() {
-    return "ToonFilterTransformation(threshold=" + threshold +
-        ",quantizationLevels=" + quantizationLevels + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    ToonFilterTransformation that = (ToonFilterTransformation) o;
+
+    if (Float.compare(that.threshold, threshold) != 0) return false;
+    return Float.compare(that.quantizationLevels, quantizationLevels) == 0;
+  }
+
+  @Override public int hashCode() {
+    int result = (threshold != +0.0f ? Float.floatToIntBits(threshold) : 0);
+    result =
+        31 * result + (quantizationLevels != +0.0f ? Float.floatToIntBits(quantizationLevels) : 0);
+    return Util.hashCode(ID.hashCode(), Util.hashCode(result));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putFloat(threshold).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putFloat(quantizationLevels).array();
+    messageDigest.update(data);
   }
 }

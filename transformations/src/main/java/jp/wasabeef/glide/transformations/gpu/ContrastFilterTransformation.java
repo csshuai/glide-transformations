@@ -16,12 +16,17 @@ package jp.wasabeef.glide.transformations.gpu;
  * limitations under the License.
  */
 
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImageContrastFilter;
 
 /**
  * contrast value ranges from 0.0 to 4.0, with 1.0 as the normal level
  */
 public class ContrastFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.ContrastFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private float contrast;
 
@@ -36,7 +41,23 @@ public class ContrastFilterTransformation extends GPUFilterTransformation {
     filter.setContrast(this.contrast);
   }
 
-  @Override public String key() {
-    return "ContrastFilterTransformation(contrast=" + contrast + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    ContrastFilterTransformation that = (ContrastFilterTransformation) o;
+
+    return Float.compare(that.contrast, contrast) == 0;
+  }
+
+  @Override public int hashCode() {
+    return Util.hashCode(ID.hashCode(), Util.hashCode(contrast));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putFloat(contrast).array();
+    messageDigest.update(data);
   }
 }

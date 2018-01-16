@@ -17,12 +17,17 @@ package jp.wasabeef.glide.transformations.gpu;
  */
 
 import android.graphics.PointF;
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImageSwirlFilter;
 
 /**
  * Creates a swirl distortion on the image.
  */
 public class SwirlFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.SwirlFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private float radius;
   private float angle;
@@ -48,8 +53,34 @@ public class SwirlFilterTransformation extends GPUFilterTransformation {
     filter.setCenter(this.center);
   }
 
-  @Override public String key() {
-    return "SwirlFilterTransformation(radius=" + radius +
-        ",angle=" + angle + ",center=" + center.toString() + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    SwirlFilterTransformation that = (SwirlFilterTransformation) o;
+
+    if (Float.compare(that.radius, radius) != 0) return false;
+    if (Float.compare(that.angle, angle) != 0) return false;
+    return center != null ? center.equals(that.center) : that.center == null;
+  }
+
+  @Override public int hashCode() {
+    int result = (radius != +0.0f ? Float.floatToIntBits(radius) : 0);
+    result = 31 * result + (angle != +0.0f ? Float.floatToIntBits(angle) : 0);
+    result = 31 * result + (center != null ? center.hashCode() : 0);
+    return Util.hashCode(ID.hashCode(), Util.hashCode(result));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putFloat(radius).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putFloat(angle).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putFloat(center.x).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putFloat(center.y).array();
+    messageDigest.update(data);
   }
 }

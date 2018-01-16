@@ -24,8 +24,11 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import java.security.MessageDigest;
 
 public class GrayscaleTransformation extends BitmapTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.GrayscaleTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   @Override protected Bitmap transform(@NonNull Context context, @NonNull BitmapPool pool,
       @NonNull Bitmap toTransform, int outWidth, int outHeight) {
@@ -46,7 +49,17 @@ public class GrayscaleTransformation extends BitmapTransformation {
     return bitmap;
   }
 
-  @Override public String key() {
-    return "GrayscaleTransformation()";
+  @Override public int hashCode() {
+    return ID.hashCode();
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    return true;
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
   }
 }

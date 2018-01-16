@@ -21,8 +21,13 @@ import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.TransformationUtils;
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 
 public class CropSquareTransformation extends BitmapTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.CropSquareTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private int size;
 
@@ -32,7 +37,23 @@ public class CropSquareTransformation extends BitmapTransformation {
     return TransformationUtils.centerCrop(pool, toTransform, size, size);
   }
 
-  @Override public String key() {
-    return "CropSquareTransformation(size=" + size + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    CropSquareTransformation that = (CropSquareTransformation) o;
+
+    return size == that.size;
+  }
+
+  @Override public int hashCode() {
+    return Util.hashCode(ID.hashCode(), Util.hashCode(size));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putInt(size).array();
+    messageDigest.update(data);
   }
 }

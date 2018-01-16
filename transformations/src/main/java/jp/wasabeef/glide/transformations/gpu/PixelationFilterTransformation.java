@@ -16,6 +16,9 @@ package jp.wasabeef.glide.transformations.gpu;
  * limitations under the License.
  */
 
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImagePixelationFilter;
 
 /**
@@ -24,6 +27,8 @@ import jp.co.cyberagent.android.gpuimage.GPUImagePixelationFilter;
  * The pixel with a default of 10.0.
  */
 public class PixelationFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.PixelationFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private float pixel;
 
@@ -38,7 +43,23 @@ public class PixelationFilterTransformation extends GPUFilterTransformation {
     filter.setPixel(this.pixel);
   }
 
-  @Override public String key() {
-    return "PixelationFilterTransformation(pixel=" + pixel + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    PixelationFilterTransformation that = (PixelationFilterTransformation) o;
+
+    return Float.compare(that.pixel, pixel) == 0;
+  }
+
+  @Override public int hashCode() {
+    return Util.hashCode(ID.hashCode(), Util.hashCode(pixel));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putFloat(pixel).array();
+    messageDigest.update(data);
   }
 }

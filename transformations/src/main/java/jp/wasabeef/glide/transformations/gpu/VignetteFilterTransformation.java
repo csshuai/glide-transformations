@@ -17,6 +17,9 @@ package jp.wasabeef.glide.transformations.gpu;
  */
 
 import android.graphics.PointF;
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import jp.co.cyberagent.android.gpuimage.GPUImageVignetteFilter;
 
@@ -26,6 +29,8 @@ import jp.co.cyberagent.android.gpuimage.GPUImageVignetteFilter;
  * with a default of x = 0.5, y = 0.5, start = 0, end = 0.75
  */
 public class VignetteFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.VignetteFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private PointF center;
   private float[] vignetteColor;
@@ -49,9 +54,40 @@ public class VignetteFilterTransformation extends GPUFilterTransformation {
     filter.setVignetteEnd(vignetteEnd);
   }
 
-  @Override public String key() {
-    return "VignetteFilterTransformation(center=" + center.toString() +
-        ",color=" + Arrays.toString(vignetteColor) +
-        ",start=" + vignetteStart + ",end=" + vignetteEnd + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    VignetteFilterTransformation that = (VignetteFilterTransformation) o;
+
+    if (Float.compare(that.vignetteStart, vignetteStart) != 0) return false;
+    if (Float.compare(that.vignetteEnd, vignetteEnd) != 0) return false;
+    if (center != null ? !center.equals(that.center) : that.center != null) return false;
+    return Arrays.equals(vignetteColor, that.vignetteColor);
+  }
+
+  @Override public int hashCode() {
+    int result = center != null ? center.hashCode() : 0;
+    result = 31 * result + Arrays.hashCode(vignetteColor);
+    result = 31 * result + (vignetteStart != +0.0f ? Float.floatToIntBits(vignetteStart) : 0);
+    result = 31 * result + (vignetteEnd != +0.0f ? Float.floatToIntBits(vignetteEnd) : 0);
+    return Util.hashCode(ID.hashCode(), Util.hashCode(result));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putFloat(center.x).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putFloat(center.y).array();
+    messageDigest.update(data);
+    for (float v : vignetteColor) {
+      data = ByteBuffer.allocate(4).putFloat(v).array();
+      messageDigest.update(data);
+    }
+    data = ByteBuffer.allocate(4).putFloat(vignetteStart).array();
+    messageDigest.update(data);
+    data = ByteBuffer.allocate(4).putFloat(vignetteEnd).array();
+    messageDigest.update(data);
   }
 }

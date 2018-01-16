@@ -16,15 +16,28 @@ package jp.wasabeef.glide.transformations.gpu;
  * limitations under the License.
  */
 
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImageSketchFilter;
 
 public class SketchFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.SketchFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   public SketchFilterTransformation() {
     super(new GPUImageSketchFilter());
   }
 
-  @Override public String key() {
-    return "SketchFilterTransformation()";
+  @Override public int hashCode() {
+    return ID.hashCode();
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    return true;
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
   }
 }

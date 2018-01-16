@@ -16,6 +16,9 @@ package jp.wasabeef.glide.transformations.gpu;
  * limitations under the License.
  */
 
+import com.bumptech.glide.util.Util;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
 
 /**
@@ -24,6 +27,8 @@ import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
  * The intensity with a default of 1.0.
  */
 public class SepiaFilterTransformation extends GPUFilterTransformation {
+  private static final String ID = "jp.wasabeef.glide.transformations.gpu.SepiaFilterTransformation";
+  private static final byte[] ID_BYTES = ID.getBytes(CHARSET);
 
   private float intensity;
 
@@ -38,7 +43,23 @@ public class SepiaFilterTransformation extends GPUFilterTransformation {
     filter.setIntensity(this.intensity);
   }
 
-  @Override public String key() {
-    return "SepiaFilterTransformation(intensity=" + intensity + ")";
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    SepiaFilterTransformation that = (SepiaFilterTransformation) o;
+
+    return Float.compare(that.intensity, intensity) == 0;
+  }
+
+  @Override public int hashCode() {
+    return Util.hashCode(ID.hashCode(), Util.hashCode(intensity));
+  }
+
+  @Override public void updateDiskCacheKey(MessageDigest messageDigest) {
+    messageDigest.update(ID_BYTES);
+
+    byte[] data = ByteBuffer.allocate(4).putFloat(intensity).array();
+    messageDigest.update(data);
   }
 }
